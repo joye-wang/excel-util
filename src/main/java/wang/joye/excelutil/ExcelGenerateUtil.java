@@ -4,7 +4,6 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.http.HttpUtil;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -27,7 +26,6 @@ import java.util.Map;
  * @author joye
  * @since 2022/01/24
  */
-@Slf4j
 @Data
 public class ExcelGenerateUtil {
 

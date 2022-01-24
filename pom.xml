@@ -4,9 +4,26 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>excel-util</name>
     <groupId>wang.joye</groupId>
     <artifactId>excel-util</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
+    <description>excel-util</description>
+    <url>https://github.com/joye-wang/excel-util</url>
+
+    <licenses>
+        <license>
+            <name>Mulan Permissive Software License，Version 2</name>
+            <url>https://license.coscl.org.cn/MulanPSL2</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/joye-wang/excel-util.git</connection>
+        <developerConnection>scm:git:ssh://github.com:joye-wang/excel-util.git</developerConnection>
+        <url>https://github.com/joye-wang/excel-util</url>
+    </scm>
 
     <properties>
         <java.version>1.8</java.version>
@@ -15,6 +32,10 @@
         <lombok.version>1.18.20</lombok.version>
         <poi.version>4.1.2</poi.version>
         <hutool.version>5.7.18</hutool.version>
+        <gpg.keyname>0x0316D4F5</gpg.keyname>
+        <!--编译编码-->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     </properties>
 
     <developers>
@@ -46,4 +67,79 @@
             <version>${hutool.version}</version>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <!--source files-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--javadoc-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--gpg加密认证-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <keyname>${gpg.keyname}</keyname>
+                            <passphraseServerId>${gpg.keyname}</passphraseServerId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--用于部署-->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
