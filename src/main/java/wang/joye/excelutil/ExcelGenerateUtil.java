@@ -104,16 +104,16 @@ public class ExcelGenerateUtil {
         return realExportColumns;
     }
 
-    public static <T> HSSFWorkbook generate(List<T> list, String configName) {
-        return generate(list, configName, null);
+    public static <T> HSSFWorkbook generateWorkbook(List<T> list, String configName) {
+        return generateWorkbook(list, configName, null);
     }
 
-    public static <T> HSSFWorkbook generate(List<T> list, String configName, String excelTitle) {
-        return generateByColumn(list2Column(list, configName), excelTitle);
+    public static <T> HSSFWorkbook generateWorkbook(List<T> list, String configName, String excelTitle) {
+        return generateWorkbookByColumn(list2Column(list, configName), excelTitle);
     }
 
-    public static HSSFWorkbook generateByColumn(List<ExcelColumn> data) {
-        return generateByColumn(data, null);
+    public static HSSFWorkbook generateWorkbookByColumn(List<ExcelColumn> data) {
+        return generateWorkbookByColumn(data, null);
     }
 
     /**
@@ -123,7 +123,7 @@ public class ExcelGenerateUtil {
      * @param exportColumnList excel的每一列格式及数据
      * @param excelTitle excel标题
      */
-    public static HSSFWorkbook generateByColumn(List<ExcelColumn> exportColumnList, String excelTitle) {
+    public static HSSFWorkbook generateWorkbookByColumn(List<ExcelColumn> exportColumnList, String excelTitle) {
 
         //防止NPE
         if (exportColumnList == null || exportColumnList.size() == 0) {
@@ -304,10 +304,10 @@ public class ExcelGenerateUtil {
      * @param fileName excel文件名称
      * @return file
      */
-    public static <T> File generate2File(List<T> list, String configName, String excelTitle, String fileName) {
+    public static <T> File generateFile(List<T> list, String configName, String excelTitle, String fileName) {
         List<ExcelColumn> maps = list2Column(list, configName);
         File file = FileUtil.createTempFile(fileName, "xlsx", null, false);
-        HSSFWorkbook workbook = generateByColumn(maps, configName);
+        HSSFWorkbook workbook = generateWorkbookByColumn(maps, configName);
         try {
             workbook.write(file);
             workbook.close();
@@ -326,7 +326,7 @@ public class ExcelGenerateUtil {
     }
 
     public static <T> void generateAndWrite(List<T> list, String configName, String excelTitle, String fileName, OutputStream out) {
-        HSSFWorkbook workbook = generate(list, configName, excelTitle);
+        HSSFWorkbook workbook = generateWorkbook(list, configName, excelTitle);
         try {
             workbook.write(out);
             workbook.close();
