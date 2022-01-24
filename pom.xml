@@ -9,18 +9,41 @@
     <version>1.0.0</version>
 
     <properties>
+        <java.version>1.8</java.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <lombok.version>1.18.20</lombok.version>
+        <poi.version>4.1.2</poi.version>
+        <hutool.version>5.7.18</hutool.version>
     </properties>
 
     <developers>
         <developer>
             <name>joye</name>
-            <email>545593725@qq.com</email>
+            <email>joye.wang@foxmail.com</email>
             <roles>
                 <role>Developer</role>
             </roles>
             <timezone>+8</timezone>
         </developer>
     </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+        <!--java tool-->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
+    </dependencies>
 </project>
