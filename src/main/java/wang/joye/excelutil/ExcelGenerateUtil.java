@@ -283,9 +283,15 @@ public class ExcelGenerateUtil {
             // 如果此列需要合并重复数据(合并单元格)
             if (exportColumn.getMergeRepeatRow() != null && exportColumn.getMergeRepeatRow()) {
                 for (Range range : duplicateDataRanges) {
+                    // 因为有表头行，所以合并单元格时需要往下偏移一行
+                    int regionOffset = 1;
+                    // 如果有标题行，需要再往下偏移一行
+                    if (excelTitle != null) {
+                        regionOffset++;
+                    }
                     // 合并单元格
-                    // 四个参数：起始行，结束行，起始列，结束列
-                    CellRangeAddress region = new CellRangeAddress(range.getStart(), range.getEnd(), j, j);
+                    // 四个参数：起始行，结束行，起始列，结束列，合并时需要加上偏移行
+                    CellRangeAddress region = new CellRangeAddress(range.getStart() + regionOffset, range.getEnd() + regionOffset, j, j);
                     sheet.addMergedRegion(region);
                 }
             }
