@@ -1,0 +1,40 @@
+[
+  {
+    "name": "post",
+    "fields": [
+      {
+        "name": "author",
+        "type": "string",
+        "title": "作者",
+        "mergeRepeatRow": "true"
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "title": "标题",
+        "mergeRepeatRow": "false"
+      },
+      {
+        "name": "coverUrl",
+        "type": "imageUrl",
+        "title": "封面"
+      },
+      {
+        "name": "level",
+        "type": "map",
+        "title": "等级",
+        "valueMap": {
+          "1": "等级1",
+          "2": "等级2",
+          "0": "无等级"
+        }
+      },
+      {
+        "name": "publishTime",
+        "type": "datetime",
+        "title": "发表时间",
+        "mergeRepeatRow": "false"
+      }
+    ]
+  }
+]

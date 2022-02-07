@@ -1,7 +1,9 @@
 package wang.joye.excelutil;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import lombok.Data;
 import org.apache.poi.hssf.usermodel.*;
@@ -16,10 +18,7 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * excel生成工具
@@ -32,7 +31,7 @@ public class ExcelGenerateUtil {
     /**
      * key:配置名, value: ExportConfig
      */
-    private static Map<String, BeanToExcelConfig> configMap;
+    private static Map<String, BeanToExcelConfig> configMap = new HashMap<>();
     /**
      * 默认列宽和默认行高
      */
@@ -118,13 +117,13 @@ public class ExcelGenerateUtil {
      * 生成excel
      * 使用列的组织形式，是因为一行中每列的数据格式不一样。只有列上的数据是一样的。
      * 如果用行，则必须要用map保存一行中每个列的详细格式，所以使用列的组织形式更省内存
-     * @param exportColumnList excel的每一列格式及数据
+     * @param columnList excel的每一列格式及数据
      * @param excelTitle excel标题
      */
-    public static HSSFWorkbook generateWorkbookByColumn(List<ExcelColumn> exportColumnList, String excelTitle) {
+    public static HSSFWorkbook generateWorkbookByColumn(List<ExcelColumn> columnList, String excelTitle) {
 
         //防止NPE
-        if (exportColumnList == null || exportColumnList.size() == 0) {
+        if (columnList == null || columnList.size() == 0) {
             throw new RuntimeException("记录为空");
             // return;
         }
@@ -150,7 +149,7 @@ public class ExcelGenerateUtil {
         HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
 
         // 设置每列的宽度
-        for (int i = 0; i < exportColumnList.size(); i++) {
+        for (int i = 0; i < columnList.size(); i++) {
             sheet.setColumnWidth(i, DEFAULT_COLUMN_WIDTH);
         }
 
@@ -158,15 +157,22 @@ public class ExcelGenerateUtil {
         int rowOffset = 0;
         List<HSSFRow> rows = new LinkedList<>();
 
-        // 检索出重复数据的所有位置
-        List<Range> duplicateDataRanges = new LinkedList<>();
         // 因为所有列都是一样的，所以只需要检索第一列
-        List<Object> firstColumn = exportColumnList.get(0).getColumnDataList();
+        List<Object> firstColumn = columnList.get(0).getColumnDataList();
         for (int i = 0; i < firstColumn.size(); i++) {
             // 初始化所有行
             HSSFRow row = sheet.createRow(i);
             row.setHeight(DEFAULT_ROW_HEIGHT);
             rows.add(row);
+        }
+        // 额外添加一行，否则标题行会越界
+        rows.add(sheet.createRow(rows.size()));
+        // 额外添加一行，否则表头行会越界
+        rows.add(sheet.createRow(rows.size()));
+
+        // 检索出重复数据的所有位置
+        List<Range> duplicateDataRanges = new LinkedList<>();
+        for (int i = 0; i < firstColumn.size(); i++) {
             // 最后一条重复数据的索引位置
             int end = i;
             for (int j = i + 1; j < firstColumn.size(); j++) {
@@ -181,12 +187,9 @@ public class ExcelGenerateUtil {
                 range.setStart(i);
                 range.setEnd(end);
                 duplicateDataRanges.add(range);
+                i = end - 1;
             }
         }
-        // 额外添加一行，否则标题行会越界
-        rows.add(sheet.createRow(rows.size()));
-        // 额外添加一行，否则表头行会越界
-        rows.add(sheet.createRow(rows.size()));
 
         // 如果有标题，则设置标题为合并单元格样式
         if (excelTitle != null) {
@@ -198,13 +201,13 @@ public class ExcelGenerateUtil {
 
             // 合并单元格
             // 四个参数：起始行，结束行，起始列，结束列
-            CellRangeAddress region = new CellRangeAddress(0, 0, 0, exportColumnList.size() - 1);
+            CellRangeAddress region = new CellRangeAddress(0, 0, 0, columnList.size() - 1);
             sheet.addMergedRegion(region);
         }
 
         // 设置表头样式和内容
-        for (int i = 0; i < exportColumnList.size(); i++) {
-            ExcelColumn k = exportColumnList.get(i);
+        for (int i = 0; i < columnList.size(); i++) {
+            ExcelColumn k = columnList.get(i);
             HSSFCell cell = rows.get(rowOffset).createCell(i);
             cell.setCellValue(k.getTitle());
             cell.setCellStyle(tableHeaderStyle);
@@ -213,8 +216,8 @@ public class ExcelGenerateUtil {
         rowOffset++;
 
         // j为列下标
-        for (int j = 0; j < exportColumnList.size(); j++) {
-            ExcelColumn exportColumn = exportColumnList.get(j);
+        for (int j = 0; j < columnList.size(); j++) {
+            ExcelColumn exportColumn = columnList.get(j);
             // i为行下标
             for (int i = 0; i < exportColumn.getColumnDataList().size(); i++) {
                 // 获取行时，加上偏移量
@@ -254,7 +257,7 @@ public class ExcelGenerateUtil {
                         }
                         // dx2和dy2为1023和255，代表占满整个单元格
                         // col1,row1和col2,row2，代表绘图的左上角开始单元格与右下角结束单元格
-                        HSSFClientAnchor anchor = new HSSFClientAnchor(0, 0, 1023, 255, (short) (i - 1), rowOffset, (short) (i - 1), rowOffset);
+                        HSSFClientAnchor anchor = new HSSFClientAnchor(0, 0, 1023, 255, (short) j, (short) (i + rowOffset), (short) j, (short) (i + rowOffset));
                         anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
                         patriarch.createPicture(anchor, workbook.addPicture(bytes, HSSFWorkbook.PICTURE_TYPE_JPEG));
                         break;
@@ -265,13 +268,13 @@ public class ExcelGenerateUtil {
                         if (fileBytes == null) {
                             break;
                         }
-                        HSSFClientAnchor anchor2 = new HSSFClientAnchor(0, 0, 1023, 255, (short) (i - 1), rowOffset, (short) (i - 1), rowOffset);
+                        HSSFClientAnchor anchor2 = new HSSFClientAnchor(0, 0, 1023, 255, (short) j, (short) (i + rowOffset), (short) j, (short) (i + rowOffset));
                         anchor2.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
                         patriarch.createPicture(anchor2, workbook.addPicture(fileBytes, HSSFWorkbook.PICTURE_TYPE_JPEG));
                         break;
                     case ExcelColumn.TYPE_BASE64_IMAGE:
                         byte[] base64Bytes = base64ToBytes(dataValue.toString());
-                        HSSFClientAnchor anchor3 = new HSSFClientAnchor(0, 0, 1023, 255, (short) (i - 1), rowOffset, (short) (i - 1), rowOffset);
+                        HSSFClientAnchor anchor3 = new HSSFClientAnchor(0, 0, 1023, 255, (short) j, (short) (i - 1), (short) j, (short) (i - 1));
                         anchor3.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
                         patriarch.createPicture(anchor3, workbook.addPicture(base64Bytes, HSSFWorkbook.PICTURE_TYPE_JPEG));
                         break;
@@ -304,14 +307,41 @@ public class ExcelGenerateUtil {
      * 生成excel，并写入到file
      * @param list 数据列表
      * @param configName 使用的转换配置，list里的数据通过此配置转成map
+     */
+    public static <T> File generateFile(List<T> list, String configName) {
+        return generateFile(list, configName, null, null);
+    }
+
+    /**
+     * 生成excel，并写入到file
+     * @param list 数据列表
+     * @param configName 使用的转换配置，list里的数据通过此配置转成map
+     */
+    public static <T> File generateFile(List<T> list, String configName, String excelTitle) {
+        return generateFile(list, configName, excelTitle, null);
+    }
+
+    /**
+     * 生成excel，并写入到file
+     * @param list 数据列表
+     * @param configName 使用的转换配置，list里的数据通过此配置转成map
      * @param excelTitle excel标题行名称
      * @param fileName excel文件名称
      * @return file
      */
     public static <T> File generateFile(List<T> list, String configName, String excelTitle, String fileName) {
         List<ExcelColumn> maps = list2Column(list, configName);
-        File file = FileUtil.createTempFile(fileName, "xlsx", null, false);
-        HSSFWorkbook workbook = generateWorkbookByColumn(maps, configName);
+        File file;
+        // 如果未设置文件名，随机设置一个文件名
+        if (StrUtil.isBlank(fileName)) {
+            fileName = RandomUtil.randomString(10);
+        }
+        try {
+            file = File.createTempFile(fileName, ".xlsx").getCanonicalFile();
+        } catch (IOException e) {
+            throw new RuntimeException("临时文件创建异常", e);
+        }
+        HSSFWorkbook workbook = generateWorkbookByColumn(maps, excelTitle);
         try {
             workbook.write(file);
             workbook.close();

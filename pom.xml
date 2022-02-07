@@ -7,7 +7,7 @@
     <name>excel-util</name>
     <groupId>wang.joye</groupId>
     <artifactId>excel-util</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <packaging>jar</packaging>
     <description>excel-util</description>
     <url>https://github.com/joye-wang/excel-util</url>
