@@ -32,7 +32,8 @@
         <lombok.version>1.18.20</lombok.version>
         <poi.version>4.1.2</poi.version>
         <hutool.version>5.7.18</hutool.version>
-        <gpg.keyname>0x0316D4F5</gpg.keyname>
+        <!--使用命令查看key：gpg - -list-signatures - -keyid-format 0xshort, 删除两个杠之间的空格-->
+        <gpg.keyname>0xE2BEA48E</gpg.keyname>
         <!--编译编码-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
